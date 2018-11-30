@@ -1,4 +1,4 @@
-package com.online.Item.domain;
+package com.online.salesorderservice.domain;
 
 public class Item {
 	

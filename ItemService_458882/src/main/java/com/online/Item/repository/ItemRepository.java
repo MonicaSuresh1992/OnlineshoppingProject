@@ -1,6 +1,7 @@
 package com.online.Item.repository;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,10 @@ public class ItemRepository {
 
 	private final RowMapper<Item> rowMapper = (ResultSet rs, int row) -> {
 		Item item = new Item();
-		item.setItem_id(rs.getInt("id"));
-		item.setItem_name(rs.getString("name"));
-		item.setItem_desc(rs.getString("description"));
-		item.setItem_price(rs.getDouble("price"));
+		item.setItemId(rs.getInt("id"));
+		item.setItemName(rs.getString("name"));
+		item.setItemDesc(rs.getString("description"));
+		item.setItemPrice(rs.getDouble("price"));
 		return item;
 	};
 
@@ -40,8 +41,13 @@ public class ItemRepository {
 	}
 
 	public Item GetItembyName(String name) {
-		
-		return this.jdbcTemplate.queryForObject(GET_ITEM_BY_NAME, new Object[]{name}, rowMapper);
+		List<Item> itemList=new ArrayList<Item>();
+		Item item=new Item();
+		itemList=jdbcTemplate.query(GET_ITEM_BY_NAME, rowMapper, new Object[]{name});
+		if(itemList!=null && itemList.size()>0){
+			item=itemList.get(0);
+		}
+		return item;
 	}
 
 

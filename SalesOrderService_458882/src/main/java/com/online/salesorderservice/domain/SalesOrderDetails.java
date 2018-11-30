@@ -4,27 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SalesOrderDetails {
-	
-	private Integer orderId;
+
 	private String orderDescription;
 	private String orderDate;
 	private Integer custId;
-	private List <String> itemList= new ArrayList<String>();
-	private double totalPrice;
-	
-	
-	public Integer getOrderId() {
-		return orderId;
+	private List <Item> itemNameList= new ArrayList<Item>();
+	private String WrongData;
+
+	public SalesOrderDetails() {}
+
+	public SalesOrderDetails(String orderDesc, String orderDate, Integer custId, List<Item> itemNameList) {
+		super();
+		this.orderDescription = orderDesc;
+		this.orderDate = orderDate;
+		this.custId = custId;
+		this.itemNameList = itemNameList;
 	}
-	public void setOrderId(Integer orderId) {
-		this.orderId = orderId;
-	}
-	public double getTotalPrice() {
-		return totalPrice;
-	}
-	public void setTotalPrice(double totalPrice) {
-		this.totalPrice = totalPrice;
-	}
+
 	public String getOrderDescription() {
 		return orderDescription;
 	}
@@ -43,12 +39,22 @@ public class SalesOrderDetails {
 	public void setCustId(Integer custId) {
 		this.custId = custId;
 	}
-	public List<String> getItemList() {
-		return itemList;
+	public List<Item> getItemNameList() {
+		return itemNameList;
 	}
-	public void setItemList(List<String> itemList) {
-		this.itemList = itemList;
+
+	public void setItemNameList(List<Item> itemNameList) {
+		this.itemNameList = itemNameList;
 	}
-	
-	
+
+	public String getWrongData() {
+		return WrongData;
+	}
+
+	public void setWrongData(String wrongData) {
+		WrongData = wrongData;
+	}
+
+
+
 }
