@@ -6,7 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-public class SalesOrder {
+public class Sales_Order_458882 {
 	@Id
 	@Column(name="id")
 	@GeneratedValue
@@ -24,9 +24,9 @@ public class SalesOrder {
 	@Column(name="total_price")
 	private double totalPrice;
 
-	public SalesOrder() {};
+	public Sales_Order_458882() {};
 	
-	public SalesOrder(Long orderId, String orderDate, Integer custId, String orderDesc, double totalPrice) {
+	public Sales_Order_458882(Long orderId, String orderDate, Integer custId, String orderDesc, double totalPrice) {
 		super();
 		this.orderId = orderId;
 		this.orderDate = orderDate;

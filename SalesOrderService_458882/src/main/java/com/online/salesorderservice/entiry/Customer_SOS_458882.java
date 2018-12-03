@@ -5,11 +5,11 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-public class CustomerSOS {
+public class Customer_SOS_458882 {
 
-	public CustomerSOS() {};
+	public Customer_SOS_458882() {};
 	
-	public CustomerSOS(Integer custId, String custFirstName, String custLastName, String custEmail) {
+	public Customer_SOS_458882(Integer custId, String custFirstName, String custLastName, String custEmail) {
 		super();
 		this.custId = custId;
 		this.custFirstName = custFirstName;

@@ -6,23 +6,19 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.online.salesorderservice.domain.Customer;
 import com.online.salesorderservice.domain.Item;
 import com.online.salesorderservice.domain.SalesOrderDetails;
-import com.online.salesorderservice.entiry.CustomerSOS;
-import com.online.salesorderservice.entiry.OrderLineItem;
-import com.online.salesorderservice.entiry.SalesOrder;
+import com.online.salesorderservice.entiry.Customer_SOS_458882;
+import com.online.salesorderservice.entiry.Order_Line_Item_458882;
+import com.online.salesorderservice.entiry.Sales_Order_458882;
 import com.online.salesorderservice.repository.CustomerSOSRepository;
 import com.online.salesorderservice.repository.OrderLineItemRepository;
 import com.online.salesorderservice.repository.SalesOrderServiceRepository;
@@ -31,13 +27,13 @@ import com.online.salesorderservice.repository.SalesOrderServiceRepository;
 public class SalesOrderServiceController {
 
 	@Autowired
-	SalesOrderServiceRepository salesOrderServiceRepository;
-
+	CustomerSOSRepository customerSOSRepository;
+	
 	@Autowired
 	OrderLineItemRepository orderLineItemRepository;
-
+	
 	@Autowired
-	CustomerSOSRepository customerSOSRepository;
+	SalesOrderServiceRepository salesOrderServiceRepository;
 
 	@Autowired
 	private LoadBalancerClient loadBalancerClient;
@@ -48,22 +44,23 @@ public class SalesOrderServiceController {
 		System.out.println("Inside Controller getOrderDesc >>>>" + salesOrderDetails.getOrderDescription());
 
 		//Validate customer by verifying the table “customer_sos” with cust_id --- Starts
-		boolean custExist;
-		List<CustomerSOS> customerSOSList = customerSOSRepository.findAll();
+		boolean custExist = false;
+		List<Customer_SOS_458882> customerSOSList = customerSOSRepository.findAll();
 		if (customerSOSList != null && customerSOSList.size() > 0){
 
-			for (int ii=0 ; ii < customerSOSList.size() ; ii++) {
-				System.out.println("customerSOSList.get(ii).getCustId()" + customerSOSList.get(ii).getCustId());
+			for (int j=0 ; j < customerSOSList.size() ; j++) {
+				System.out.println("customerSOSList.get(ii).getCustId()" + customerSOSList.get(j).getCustId());
 				System.out.println("salesOrderDetails.getCustId()" + salesOrderDetails.getCustId());
-				if (customerSOSList.get(ii).getCustId() != null && salesOrderDetails.getCustId() != null){
-					if (customerSOSList.get(ii).getCustId().equals(salesOrderDetails.getCustId())) {
+				if (customerSOSList.get(j).getCustId() != null && salesOrderDetails.getCustId() != null){
+					if (customerSOSList.get(j).getCustId().equals(salesOrderDetails.getCustId())) {
 						custExist = true;
-					} else {
-
-						System.out.println("<<<<<<<<<Customer not available 1111>>>>");
-						salesOrderDetails.setWrongData("WrongCustId");
-						throw new Exception();
 					}
+//					} else {
+//
+//						System.out.println("<<<<<<<<<Customer not available 1111>>>>");
+//						salesOrderDetails.setWrongData("WrongCustId");
+//						throw new Exception();
+//					}
 				} else {
 					//Customer not available -- Exception to be thrown
 					System.out.println("<<<<<<<<<Customer not available 22222>>>>");
@@ -71,6 +68,12 @@ public class SalesOrderServiceController {
 					throw new Exception();
 				}
 
+			}
+			
+			if (!custExist){
+				System.out.println("<<<<<<<<<Customer not available 33333>>>>");
+				salesOrderDetails.setWrongData("WrongCustId");
+				throw new Exception();
 			}
 		}	else {
 			salesOrderDetails.setWrongData("WrongCustId");
@@ -80,7 +83,7 @@ public class SalesOrderServiceController {
 		//Validate customer by verifying the table “customer_sos” with cust_id --- Ends
 
 		// REST call to validate items by calling item service with item name -- itemByName ---Starts 
-		System.out.println("Before REST CALL >>>>");		
+		System.out.println("Before Fetching Items >>>>");		
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<Item> response = null;
 
@@ -98,7 +101,7 @@ public class SalesOrderServiceController {
 				item.setItemName(itemName);
 				System.out.println("<<<<<<<<<Item Name >>>"+itemName);
 				response = restTemplate.getForEntity(fetchItemServiceUrl() + "/items/"+itemName, Item.class);
-				System.out.println("After REST CALL >>>>"+response.getBody());
+				System.out.println("After Fetching Items >>>>"+response.getBody());
 				itemName = response.getBody().getItemName();
 				totalPrice = totalPrice + response.getBody().getItemPrice();
 				fetchedItemList.add(item);
@@ -119,7 +122,7 @@ public class SalesOrderServiceController {
 		// create order by inserting the order details in sales_order table --- Starts
 		if(salesOrderDetails != null ) {
 
-			SalesOrder salesOrder = new SalesOrder();
+			Sales_Order_458882 salesOrder = new Sales_Order_458882();
 			if (salesOrderDetails.getOrderDate() != null ) {
 				salesOrder.setOrderDate(salesOrderDetails.getOrderDate());
 			}
@@ -143,7 +146,7 @@ public class SalesOrderServiceController {
 			if (fetchedItemList != null && fetchedItemList.size() >0 ) {
 				for (int i=0 ; i < fetchedItemList.size() ; i++) {
 					if (fetchedItemList.get(i).getItemName() != null && fetchedItemList.get(i).getItemName() != ""){
-						OrderLineItem orderLineItem = new OrderLineItem();
+						Order_Line_Item_458882 orderLineItem = new Order_Line_Item_458882();
 						orderLineItem.setItemName(fetchedItemList.get(i).getItemName());
 						orderLineItem.setItemQuantity(fetchedItemList.size());// Check
 						orderLineItem.setOrderId(orderId);
@@ -181,7 +184,7 @@ public class SalesOrderServiceController {
 
 	public void insertCustomerSOS(Customer customer) {
 		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<insertCustomerSOS>>>>>>>>>>>>>>>>>>>>>");
-		CustomerSOS customerSOS  = new CustomerSOS();
+		Customer_SOS_458882 customerSOS  = new Customer_SOS_458882();
 
 		customerSOS.setCustId(customer.getId());
 		customerSOS.setCustFirstName(customer.getFirstName());

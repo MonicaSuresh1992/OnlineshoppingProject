@@ -6,7 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-public class OrderLineItem {
+public class Order_Line_Item_458882 {
 	@Id
 	@Column(name="id")
 	@GeneratedValue
@@ -21,9 +21,9 @@ public class OrderLineItem {
 	@Column(name="order_id")
 	private Long orderId;
 	
-	public OrderLineItem() {};
+	public Order_Line_Item_458882() {};
 	
-	public OrderLineItem(Long orderLineItemId, String itemName, Integer itemQuantity, Long orderId) {
+	public Order_Line_Item_458882(Long orderLineItemId, String itemName, Integer itemQuantity, Long orderId) {
 		super();
 		this.orderLineItemId = orderLineItemId;
 		this.itemName = itemName;
