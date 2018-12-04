@@ -3,6 +3,8 @@ package com.online.salesorderservice.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -26,12 +28,14 @@ import com.online.salesorderservice.repository.SalesOrderServiceRepository;
 @RestController
 public class SalesOrderServiceController {
 
+	Logger logger = LoggerFactory.getLogger(SalesOrderServiceController.class); 
+
 	@Autowired
 	CustomerSOSRepository customerSOSRepository;
-	
+
 	@Autowired
 	OrderLineItemRepository orderLineItemRepository;
-	
+
 	@Autowired
 	SalesOrderServiceRepository salesOrderServiceRepository;
 
@@ -41,37 +45,31 @@ public class SalesOrderServiceController {
 	@PostMapping("/orders")
 	@HystrixCommand(fallbackMethod = "customerOrItemFallBack")
 	public String add(@RequestBody SalesOrderDetails salesOrderDetails) throws Exception {
-		System.out.println("Inside Controller getOrderDesc >>>>" + salesOrderDetails.getOrderDescription());
+		logger.debug("<<<<<<<<<<Before Validating Customer>>>>>>>>>>");
 
-		//Validate customer by verifying the table “customer_sos” with cust_id --- Starts
+		//Validating customer
 		boolean custExist = false;
 		List<Customer_SOS_458882> customerSOSList = customerSOSRepository.findAll();
 		if (customerSOSList != null && customerSOSList.size() > 0){
 
 			for (int j=0 ; j < customerSOSList.size() ; j++) {
-				System.out.println("customerSOSList.get(ii).getCustId()" + customerSOSList.get(j).getCustId());
+				System.out.println("customerSOSList.get(j).getCustId()" + customerSOSList.get(j).getCustId());
 				System.out.println("salesOrderDetails.getCustId()" + salesOrderDetails.getCustId());
 				if (customerSOSList.get(j).getCustId() != null && salesOrderDetails.getCustId() != null){
 					if (customerSOSList.get(j).getCustId().equals(salesOrderDetails.getCustId())) {
 						custExist = true;
 					}
-//					} else {
-//
-//						System.out.println("<<<<<<<<<Customer not available 1111>>>>");
-//						salesOrderDetails.setWrongData("WrongCustId");
-//						throw new Exception();
-//					}
 				} else {
 					//Customer not available -- Exception to be thrown
-					System.out.println("<<<<<<<<<Customer not available 22222>>>>");
+					logger.debug("<<<<<<<<<Customer not available-1>>>>");
 					salesOrderDetails.setWrongData("WrongCustId");
 					throw new Exception();
 				}
 
 			}
-			
+
 			if (!custExist){
-				System.out.println("<<<<<<<<<Customer not available 33333>>>>");
+				logger.debug("<<<<<<<<<Customer not available-2>>>>");
 				salesOrderDetails.setWrongData("WrongCustId");
 				throw new Exception();
 			}
@@ -80,10 +78,10 @@ public class SalesOrderServiceController {
 			throw new Exception();
 		}
 
-		//Validate customer by verifying the table “customer_sos” with cust_id --- Ends
+		logger.debug("<<<<<<<<<<After Validating Customer>>>>>>>>>>");
 
 		// REST call to validate items by calling item service with item name -- itemByName ---Starts 
-		System.out.println("Before Fetching Items >>>>");		
+		logger.debug("Before Fetching Items >>>>");		
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<Item> response = null;
 
@@ -101,18 +99,20 @@ public class SalesOrderServiceController {
 				item.setItemName(itemName);
 				System.out.println("<<<<<<<<<Item Name >>>"+itemName);
 				response = restTemplate.getForEntity(fetchItemServiceUrl() + "/items/"+itemName, Item.class);
-				System.out.println("After Fetching Items >>>>"+response.getBody());
+				logger.debug("<<<<<<<After Fetching Items >>>>>>>");
+
+				System.out.println("Response"+response.getBody());
 				itemName = response.getBody().getItemName();
 				totalPrice = totalPrice + response.getBody().getItemPrice();
 				fetchedItemList.add(item);
 				if(itemName.equals(null) || itemName.equals("")){
 					//Item details not available -- Exception to be thrown
-					System.out.println("<<<<<<<<<Item details not available 1111111 >>>");
+					logger.debug("<<<<<<<<<Item details not available-1>>>");
 					salesOrderDetails.setWrongData("WrongItemName");
 				}
 			}
 		} else {
-			System.out.println("<<<<<<<<<Item details not available 1111111 >>>");
+			logger.debug("<<<<<<<<<Item details not available-2>>>");
 			salesOrderDetails.setWrongData("WrongItemName");
 			//Item details not available -- Exception to be thrown
 		}
@@ -155,7 +155,7 @@ public class SalesOrderServiceController {
 
 					} else {
 						//Item details not available -- Exception to be thrown
-						System.out.println("<<<<<<<<<Item details not available 1 >>>");
+						logger.debug("<<<<<<<<<Item details not available 1 >>>");
 						salesOrderDetails.setWrongData("WrongItemName");
 						throw new Exception();
 					}
@@ -171,19 +171,19 @@ public class SalesOrderServiceController {
 			// create order line by inserting the order details in order_line_item table --- Ends
 		}
 		System.out.println("<<<<<<<<<Order Id >>>"+orderId.toString());
-//		return orderId.toString();
+		//		return orderId.toString();
 
-//        HttpHeaders httpHeaders = new HttpHeaders();
-//        httpHeaders.setLocation(ServletUriComponentsBuilder
-//                .fromCurrentRequest().path("/" +orderId)
-//                .buildAndExpand().toUri());
+		//        HttpHeaders httpHeaders = new HttpHeaders();
+		//        httpHeaders.setLocation(ServletUriComponentsBuilder
+		//                .fromCurrentRequest().path("/" +orderId)
+		//                .buildAndExpand().toUri());
 
-        return orderId.toString();
+		return orderId.toString();
 
 	}
 
 	public void insertCustomerSOS(Customer customer) {
-		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<insertCustomerSOS>>>>>>>>>>>>>>>>>>>>>");
+		//System.out.println("<<<<<<<<<<<<<<<<<<<<<<<insertCustomerSOS>>>>>>>>>>>>>>>>>>>>>");
 		Customer_SOS_458882 customerSOS  = new Customer_SOS_458882();
 
 		customerSOS.setCustId(customer.getId());
@@ -197,15 +197,15 @@ public class SalesOrderServiceController {
 	// This method is for implementing Ribbon - Client side load balancing
 	private String fetchItemServiceUrl() {
 
-		System.out.println("Inside fetchItemServiceUrl");
+		//System.out.println("Inside fetchItemServiceUrl");
 
 
 		ServiceInstance instance = loadBalancerClient.choose("item-service");
 
-		System.out.println("After fetching instance in fetchItemServiceUrl");
+		//System.out.println("After fetching instance in fetchItemServiceUrl");
 
-		System.out.println("uri: {}"+ instance.getUri().toString());
-		System.out.println("serviceId: {}"+ instance.getServiceId());
+		//System.out.println("uri: {}"+ instance.getUri().toString());
+		//System.out.println("serviceId: {}"+ instance.getServiceId());
 
 		return instance.getUri().toString();
 	}
@@ -214,7 +214,7 @@ public class SalesOrderServiceController {
 		if (salesOrderDetails.getWrongData()!=null && salesOrderDetails.getWrongData().equalsIgnoreCase("WrongCustId")){
 			return "Customer Id is not valid. Please enter the correct Id";
 		} else {
-			return "Iten Name is not valid. Please enter the correct Item";
+			return "Item Name is not valid. Please enter the correct Item";
 		}
 	}
 }

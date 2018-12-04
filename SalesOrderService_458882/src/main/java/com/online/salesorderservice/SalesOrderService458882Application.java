@@ -24,7 +24,7 @@ public class SalesOrderService458882Application {
 	
 	@RabbitListener(queues = "CustomerCreated")
 	public void receiveMessage(Customer customer) {
-		System.out.println("Customer Details" + customer.getId());
+		System.out.println("Customer Details:" + "\nId:"+customer.getId()+"\nEmail:"+customer.getEmail()+"\nFirst Name:"+customer.getFirstName()+"\nLast Name:"+customer.getLastName());
 		salesOrderController.insertCustomerSOS(customer);
 	}
 }

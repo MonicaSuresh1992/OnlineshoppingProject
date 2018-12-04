@@ -2,7 +2,11 @@ package com.online.customer.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,22 +19,27 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.online.customer.domain.Customer;
 import com.online.customer.service.CustomerService;
 
+@RefreshScope
 @RestController
 public class CustomerController {
+	
+	Logger logger = LoggerFactory.getLogger(CustomerController.class); 
 
 	@Autowired
 	CustomerService customerService;
 
 	@GetMapping("/customers")
 	public List<Customer> getAllCustomers(){
+		
+		logger.debug("<<<<<<<<<<Get All Customer Details>>>>>>>>>>");
 		return customerService.getAllCustomers();
 
 	}
 	@PostMapping("/customer")
 	 public ResponseEntity<?> add(@RequestBody Customer customer) {
-		System.out.println("<<<<<<<<<Inside Controller Save function BEFOREEE>>>>>>>>>>");
+		logger.debug("<<<<<<<<<Before Inserting Customer Details>>>>>>>>>>");
         Customer cust = customerService.save(customer);
-        System.out.println("<<<<<<<<<Inside Controller Save function AFTER>>>>>>>>>>");
+        logger.debug("<<<<<<<<<After Inserting Customer Details>>>>>>>>>>");
         assert cust != null;
 
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -40,6 +49,14 @@ public class CustomerController {
 
         return new ResponseEntity<>(cust, httpHeaders, HttpStatus.CREATED);
     }
-
+	
+	//***************************** To be removed****************************
+//	@Value("${message}")
+//	   private String message;
+//	   
+//	   @GetMapping("/")
+//	   public String hello(){
+//	       return message;
+//	   }
 
 }
