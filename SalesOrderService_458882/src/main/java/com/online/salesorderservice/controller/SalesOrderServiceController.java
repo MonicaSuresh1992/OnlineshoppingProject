@@ -200,7 +200,7 @@ public class SalesOrderServiceController {
 		//System.out.println("Inside fetchItemServiceUrl");
 
 
-		ServiceInstance instance = loadBalancerClient.choose("item-service");
+		ServiceInstance instance = loadBalancerClient.choose("item-service_458882");
 
 		//System.out.println("After fetching instance in fetchItemServiceUrl");
 
@@ -216,6 +216,7 @@ public class SalesOrderServiceController {
 		} else {
 			return "Item Name is not valid. Please enter the correct Item";
 		}
+		
 	}
 }
 

@@ -50,13 +50,4 @@ public class CustomerController {
         return new ResponseEntity<>(cust, httpHeaders, HttpStatus.CREATED);
     }
 	
-	//***************************** To be removed****************************
-//	@Value("${message}")
-//	   private String message;
-//	   
-//	   @GetMapping("/")
-//	   public String hello(){
-//	       return message;
-//	   }
-
-}
+	}
