@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.online.salesorderservice.domain.Customer;
 import com.online.salesorderservice.domain.Item;
@@ -29,6 +31,9 @@ import com.online.salesorderservice.repository.SalesOrderServiceRepository;
 public class SalesOrderServiceController {
 
 	Logger logger = LoggerFactory.getLogger(SalesOrderServiceController.class); 
+	
+	@Autowired
+	private EurekaClient discoveryClient;
 
 	@Autowired
 	CustomerSOSRepository customerSOSRepository;
@@ -195,19 +200,32 @@ public class SalesOrderServiceController {
 	}
 
 	// This method is for implementing Ribbon - Client side load balancing
+//	private String fetchItemServiceUrl() {
+//
+//		//System.out.println("Inside fetchItemServiceUrl");
+//
+//
+//		ServiceInstance instance = loadBalancerClient.choose("item-service_458882");
+//
+//		//System.out.println("After fetching instance in fetchItemServiceUrl");
+//		//System.out.println("uri: {}"+ instance.getUri().toString());
+//		//System.out.println("serviceId: {}"+ instance.getServiceId());
+//
+//		return instance.getUri().toString();
+//	}
+	
 	private String fetchItemServiceUrl() {
 
-		//System.out.println("Inside fetchItemServiceUrl");
+		System.out.println("Inside fetchItemServiceUrl");
 
 
-		ServiceInstance instance = loadBalancerClient.choose("item-service_458882");
+		InstanceInfo instance = discoveryClient.getNextServerFromEureka("item-service_458882",false);
 
-		//System.out.println("After fetching instance in fetchItemServiceUrl");
+		System.out.println("After fetching instance in fetchItemServiceUrl");
+		System.out.println("uri: {}"+ instance.getHomePageUrl());
+		System.out.println("serviceId: {}"+ instance.getId());
 
-		//System.out.println("uri: {}"+ instance.getUri().toString());
-		//System.out.println("serviceId: {}"+ instance.getServiceId());
-
-		return instance.getUri().toString();
+		return instance.getHomePageUrl();
 	}
 
 	public String customerOrItemFallBack(SalesOrderDetails salesOrderDetails){
